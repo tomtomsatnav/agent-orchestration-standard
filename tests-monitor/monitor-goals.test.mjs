@@ -174,7 +174,9 @@ test('100 goals: list capped at 50 (newest), state.goals at 20; memory stays bou
   fs.writeFileSync(path.join(big, 'events.ndjson'), line.repeat(Math.ceil(20e6 / line.length)));
   const m = await startMonitor({ orch, live });
   try {
-    const rss = () => Number(execFileSync('ps', ['-o', 'rss=', '-p', String(m.p.pid)]).toString()) / 1024;
+    const rss = () => process.platform === 'win32'
+      ? Number(execFileSync('powershell', ['-NoProfile', '-NonInteractive', '-Command', `(Get-Process -Id ${m.p.pid}).WorkingSet64`]).toString()) / 1048576
+      : Number(execFileSync('ps', ['-o', 'rss=', '-p', String(m.p.pid)]).toString()) / 1024;
     const l = (await m.get('/api/goals')).json.goals;
     assert.equal(l.length, 50);
     assert.equal(l[0].id, 'g-099'); assert.equal(l[49].id, 'g-050');
@@ -182,8 +184,9 @@ test('100 goals: list capped at 50 (newest), state.goals at 20; memory stays bou
     assert.equal((await m.get('/api/goals/g-000')).status, 404);       // beyond the cap
     const before = rss();
     for (let i = 0; i < 60; i++) { const d = (await m.get('/api/goals/g-099')).json.goal; assert.equal(d.last_events.length, 25); await m.get('/api/state'); }
-    assert.ok(rss() - before < 150, `rss grew ${rss() - before} MB`);
-    assert.ok(rss() < 400, `rss ${rss()} MB`);
+    const after = rss();   // read once: the messages are built eagerly, and each read spawns a process
+    assert.ok(after - before < 150, `rss grew ${after - before} MB`);
+    assert.ok(after < 400, `rss ${after} MB`);
   } finally { await m.stop(); }
 });
 
@@ -254,6 +257,10 @@ test('hook: gid/tid recorded only when valid; nothing else from the environment;
   assert.ok(!raw.includes(SECRET) && !raw.includes('/Users/x/approvals') && !raw.includes('secret-arg') && !raw.includes('ls -la'));
   assert.equal(r[0].sum, 'ls');
   assert.deepEqual(Object.keys(r[0]).sort(), ['cwd', 'cwdp', 'ev', 'gid', 'sid', 'sum', 'tid', 'tool', 'ts']);
-  assert.equal(fs.statSync(path.join(live, 'hook-events.ndjson')).mode & 0o777, 0o600);
-  assert.equal(fs.statSync(live).mode & 0o777, 0o700);
+  // Windows has no POSIX mode bits: Node reports 0o666 for files and 0o777 for directories whatever was requested.
+  // The hook still requests 0o600 / 0o700; POSIX checks that here.
+  if (process.platform !== 'win32') {
+    assert.equal(fs.statSync(path.join(live, 'hook-events.ndjson')).mode & 0o777, 0o600);
+    assert.equal(fs.statSync(live).mode & 0o777, 0o700);
+  }
 });
