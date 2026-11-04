@@ -21,7 +21,7 @@ Looking for orchestration (planning goals, launching and managing workers)? That
 
 ## Install the dashboard
 
-Needs Node 18+ and the Claude Code CLI (`claude` on your PATH; the installer checks and stops with a message if not). No dependencies to install. On Windows it also needs the full Git for Windows (its bash runs the recipes; MinGit has none) and GNU make (`winget install ezwinports.make`); `make` then works the same from Git Bash, cmd and PowerShell (except `make test`: the test suites still need Linux or macOS).
+Needs Node 18+ and the Claude Code CLI (`claude` on your PATH; the installer checks and stops with a message if not). No dependencies to install. On Windows it also needs the full Git for Windows (its bash runs the recipes; MinGit has none) and GNU make (`winget install ezwinports.make`); `make` then works the same from Git Bash, cmd and PowerShell, `make test` included.
 
 ```sh
 git clone https://github.com/tomtomsatnav/agent-orchestration-standard && cd agent-orchestration-standard

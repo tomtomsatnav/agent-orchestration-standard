@@ -113,7 +113,7 @@ test('collector: oversized response is an error, not data; stale data expires', 
 });
 
 // ---- integration: two real monitors, remote reached through a fake ssh shim ----
-test('integration: aggregated /api/state through a fake ssh shim', async () => {
+test('integration: aggregated /api/state through a fake ssh shim', { skip: process.platform === 'win32' && 'the fake ssh is a #!/bin/sh script, which Windows cannot execFile' }, async () => {
   const TMP = tmpDir('aos-xmach-');
   const bin = path.join(TMP, 'bin'); fs.mkdirSync(bin);
   // fake ssh: ssh -o .. -o .. -- <host> "<cmd>"  -> run the cmd's URL locally with curl (the "remote" is just another local monitor)

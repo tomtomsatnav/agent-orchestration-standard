@@ -114,7 +114,7 @@ test: ## Run every test suite
 	@echo "==> done subagents"; out="$$(node ui/done.test.mjs)" || { echo "$$out" | grep FAIL; exit 1; }; echo "$$out" | tail -1
 	@echo "==> machines (cross-machine UI)"; out="$$(node ui/machines.test.mjs)" || { echo "$$out" | grep FAIL; exit 1; }; echo "$$out" | tail -1
 	@echo "==> timeline"; out="$$(node ui/timeline.test.mjs)" || { echo "$$out" | grep FAIL; exit 1; }; echo "$$out" | tail -1
-	@echo "==> monitor goals, verdicts + hooks"; out="$$(node --test tests-monitor/*.test.mjs 2>&1)" || { echo "$$out" | grep -E "^not ok|error:" | head -20; exit 1; }; echo "$$out" | grep -E '^# (pass|fail)' | tr '\n' ' '; echo
+	@echo "==> monitor goals, verdicts + hooks"; out="$$(node --test --test-reporter=tap tests-monitor/*.test.mjs 2>&1)" || { echo "$$out" | grep -E "^not ok|error:" | head -20; exit 1; }; echo "$$out" | grep -E '^# (pass|fail)' | tr '\n' ' '; echo
 
 doctor: ## Check the whole setup and say what to fix
 	@$(AOS) doctor
