@@ -2,6 +2,8 @@
 
 [![CI](https://github.com/tomtomsatnav/agent-orchestration-standard/actions/workflows/ci.yml/badge.svg)](https://github.com/tomtomsatnav/agent-orchestration-standard/actions/workflows/ci.yml)
 
+> **The dashboard now lives in [Fenceline](https://github.com/tomtomsatnav/fenceline).** Same live view of your Claude Code sessions, plus plain-English fences that warn or block when an agent strays outside the area you meant, a map of each agent's route through the repo, and published eval results. Its `make install` removes this plugin first, so switching over is one command.
+
 **A read-only live monitor for Claude Code.** It shows what your sessions and subagents are doing (agents, tasks, tokens, cost, file conflicts, alerts) as a streaming graph in the browser, a terminal view (`aos-dash`), an MCP server and a status line. It never starts, stops or steers agents. Local-only, zero dependencies.
 
 Looking for orchestration (planning goals, launching and managing workers)? That is a different, separate and **experimental** project: [aos-orchestrator](https://github.com/tomtomsatnav/aos-orchestrator), opt-in. This dashboard can display its goals, nothing more.
