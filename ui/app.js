@@ -1534,7 +1534,12 @@
           li.appendChild(document.createTextNode((c.met ? '✓ ' : '○ ') + (c.text || c.id))); ul.appendChild(li);
         });
         body.appendChild(ul);
-        if (g.budget) { section(body, 'Budget'); kv(body, [['Ticks', g.budget.max_ticks], ['Spent', '$' + g.budget.spent_usd + ' / $' + g.budget.max_usd]]); }
+        if (g.budget) {
+          section(body, 'Budget');
+          var brows = [['Ticks', g.budget.max_ticks]];
+          if (g.budget.max_usd != null) brows.push(['Spent', '$' + Number(g.budget.spent_usd || 0).toFixed(2) + ' / $' + g.budget.max_usd]);
+          kv(body, brows);
+        }
       }
       var mmF = mergedMain(); if (mmF) toolFeed(body, mmF);
       section(body, 'Recent telemetry'); var mmE = mergedMain(); evList(body, (state.events || []).filter(function (e) { return e.actor === 'orchestrator' || (mmE && e.actor === mmE.id); }));
