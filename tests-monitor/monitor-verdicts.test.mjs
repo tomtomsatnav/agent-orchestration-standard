@@ -61,7 +61,7 @@ test('replay (?at=) omits verdicts and guard badges', async () => {
   assert.ok(s.agents.every((a) => a.guard === undefined));
 });
 
-test('malformed, oversized, wrong schema, bad ids, mismatched ids and symlinks are ignored', async () => {
+test('malformed, oversized, wrong schema, bad ids, mismatched ids and symlinks are ignored', async (t) => {
   const good = fx('v-20261021-100000-aaaaaa'), mk = (id, o = {}) => ({ ...good, id, ...o });
   put('v-20261021-130000-000001', '{"schema":"aos.verdict/1","id":"v-2026');                                   // partial write
   put('v-20261021-130000-000002', mk('v-20261021-130000-000002', { schema: 'aos.verdict/2' }));                // wrong schema
@@ -71,7 +71,8 @@ test('malformed, oversized, wrong schema, bad ids, mismatched ids and symlinks a
   put('v-20261021-130000-000006', '[1,2]');
   put('not-a-verdict', mk('not-a-verdict')); put('v-20261021-1300-zz', mk('v-20261021-1300-zz'));             // bad ids
   fs.writeFileSync(path.join(TMP, 'outside.json'), JSON.stringify(mk('v-20261021-130000-000007')));
-  fs.symlinkSync(path.join(TMP, 'outside.json'), path.join(VD, 'v-20261021-130000-000007.json'));             // symlink out of the dir
+  try { fs.symlinkSync(path.join(TMP, 'outside.json'), path.join(VD, 'v-20261021-130000-000007.json')); }     // symlink out of the dir
+  catch (e) { if (process.platform !== 'win32' || e.code !== 'EPERM') throw e; t.diagnostic('file symlink case skipped: Windows refused the symlink (EPERM; needs Developer Mode or admin)'); }
   // junk inside a valid record: wrong-typed lists/fields are dropped, hostile text cleaned
   put('v-20261021-130000-000008', mk('v-20261021-130000-000008', { repo: 'relative/x', repo_name: '/etc/evil', rejections: 'no', checks: [null, { argv: 'rm -rf /' }], failing_tests: [1, 'a\u0007b /Users/me/secret/t.js: x'], source: 'bash', base: 'zz', tree: '../../x', tool_version: 7, accepted: false, integrity: true }));
   await sleep(1150);

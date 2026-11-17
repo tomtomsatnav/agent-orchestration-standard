@@ -44,13 +44,13 @@ export function guardConfig(c) {
   for (const e of g.repos.slice(0, 50)) {
     const obj = e && typeof e === 'object' && !Array.isArray(e), r = obj ? e.path : e;
     if (!isAbs(r)) continue; const p = real(r);
-    try { if (p && p !== '/' && fs.statSync(p).isDirectory() && !repos.includes(p)) { repos.push(p); if (obj && typeof e.base === 'string' && SHA_RE.test(e.base)) bases[p] = e.base; } } catch {}
+    try { if (p && p !== path.parse(p).root && fs.statSync(p).isDirectory() && !repos.includes(p)) { repos.push(p); if (obj && typeof e.base === 'string' && SHA_RE.test(e.base)) bases[p] = e.base; } } catch {}
   }
   if (!repos.length) return null;
   const t = Number(g.timeout_s ?? 300);
   return { repos, bases, cli, timeout_s: Number.isFinite(t) && t >= 10 && t <= 3600 ? Math.round(t) : 300 };
 }
-const inside = (p, base) => p === base || p.startsWith(base + '/');
+const inside = (p, base) => p === base || p.startsWith(base.endsWith(path.sep) ? base : base + path.sep);
 // hook input + guard config -> the deepest listed repo that contains the realpath of cwd, or null
 function repoFor(input, g) {
   if (!g || !input || typeof input !== 'object' || !isAbs(input.cwd)) return null;

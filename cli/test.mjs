@@ -389,8 +389,10 @@ assert.equal(cleanup({ write: (s) => w.push(s) }, fakeStdin), false, 'idempotent
   assert.match(w.text, /Waiting for your first Claude Code session/);
   assert.match(w.text, /appears here/);
   const { pathHint } = await import('./dash.mjs');
-  assert.equal(pathHint({ PATH: '/usr/bin' }, '/h'), '/h/.local/bin is not on your PATH. Add this line to your shell profile (~/.zshrc or ~/.bashrc):\n  export PATH="$HOME/.local/bin:$PATH"');
-  assert.equal(pathHint({ PATH: '/x:/h/.local/bin' }, '/h'), '');
+  const { join, delimiter } = await import('node:path');
+  const bin = join('/h', '.local', 'bin');
+  assert.equal(pathHint({ PATH: '/usr/bin' }, '/h'), `${bin} is not on your PATH. Add this line to your shell profile (~/.zshrc or ~/.bashrc):\n  export PATH="$HOME/.local/bin:$PATH"`);
+  assert.equal(pathHint({ PATH: ['/x', bin].join(delimiter) }, '/h'), '');
 }
 // ---- cross-machine: --machine filter, machines summary line, namespaced ids
 {

@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { pathToFileURL } from 'node:url';
 import { ROOT, tmpDir, sleep } from './harness.mjs';
 
 const TMP = tmpDir('aos-guardhook-'), LIVE = path.join(TMP, 'live'), HOOK = path.join(ROOT, 'hooks', 'aos-guard.mjs');
@@ -18,12 +19,12 @@ const git = (...a) => { const r = spawnSync('git', ['-c', 'user.name=t', '-c', '
 let SHA0;
 before(async () => {
   fs.mkdirSync(path.join(REPO, 'src'), { recursive: true }); fs.mkdirSync(OUTSIDE); fs.mkdirSync(LIVE);
-  fs.symlinkSync(OUTSIDE, path.join(REPO, 'escape'));
+  fs.symlinkSync(OUTSIDE, path.join(REPO, 'escape'), 'junction');
   git('init', '-q'); git('commit', '-q', '--allow-empty', '-m', 'base'); SHA0 = git('rev-parse', 'HEAD');
   // fake orchestrator CLI: records its argv and cwd, then sleeps a little (the hook must not wait for it)
   fs.writeFileSync(CLI, `import fs from 'node:fs';\nfs.appendFileSync(${JSON.stringify(REC)}, JSON.stringify({ argv: process.argv.slice(2), cwd: process.cwd() }) + '\\n');\nconsole.log('verify output');\nsetTimeout(() => {}, 1200);\n`);
   process.env.AOS_LIVE_DIR = LIVE;
-  H = await import(HOOK + '?t=' + Date.now());
+  H = await import(pathToFileURL(HOOK).href + '?t=' + Date.now());
 });
 after(() => { fs.rmSync(TMP, { recursive: true, force: true }); });
 const lock = () => H.lockPath(fs.realpathSync(REPO));

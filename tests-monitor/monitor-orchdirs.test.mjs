@@ -14,7 +14,7 @@ const getJson = (port, p) => new Promise((resolve, reject) => { http.get({ host:
 async function monitor(env) {
   const port = await freePort();
   const clean = { ...process.env }; delete clean.AOS_ORCH_DIR; delete clean.XDG_STATE_HOME; delete clean.CLAUDE_PLUGIN_DATA;
-  const p = spawn(process.execPath, [path.join(ROOT, 'monitor.mjs')], { env: { ...clean, PORT: String(port), ...env }, stdio: ['ignore', 'pipe', 'pipe'] });
+  const p = spawn(process.execPath, [path.join(ROOT, 'monitor.mjs')], { env: { ...clean, PORT: String(port), ...env, ...(env.HOME ? { USERPROFILE: env.HOME } : {}) }, stdio: ['ignore', 'pipe', 'pipe'] });
   await new Promise((res, rej) => { p.stdout.on('data', (d) => { if (String(d).includes('live monitor on')) res(); }); p.on('exit', () => rej(new Error('exit'))); setTimeout(() => rej(new Error('timeout')), 8000); });
   return { port, stop: () => new Promise((r) => { p.on('exit', r); p.kill('SIGTERM'); setTimeout(() => p.kill('SIGKILL'), 1500).unref(); }) };
 }
