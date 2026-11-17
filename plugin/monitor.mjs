@@ -745,8 +745,12 @@ function fold(list, ref) {
       if (name === 'PostModelSwitch' && r.m) actor.mdl = r.m;
     }
     else if (name === 'Notification') {
-      actor.act = t; actor.wait = true;
-      if (r.nt && !NI_IGNORE.has(r.nt) || !r.nt) alert(t, 'needs_input', label, `${label} needs input${r.nt ? ' (' + r.nt + ')' : ''}`);
+      actor.act = t;
+      // ignored types are not a user wait; leaving wait set hides a later stuck
+      if (!r.nt || !NI_IGNORE.has(r.nt)) {
+        actor.wait = true;
+        alert(t, 'needs_input', label, `${label} needs input${r.nt ? ' (' + r.nt + ')' : ''}`);
+      }
     }
     else if (name === 'PreToolUse' || name === 'PostToolUse') {
       if (name === 'PreToolUse' && (r.tool === 'Agent' || r.tool === 'Task') && r.sum && !r.agent_id) (s.pend = s.pend || []).push(String(r.sum));
