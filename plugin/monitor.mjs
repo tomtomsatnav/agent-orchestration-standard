@@ -1090,7 +1090,11 @@ function serveStatic(req, res, pathname) {
     const stat = fs.statSync(real);
     res.writeHead(200, { ...HEADERS, 'Content-Type': MIME[path.extname(real).toLowerCase()] || 'application/octet-stream', 'Content-Length': stat.size });
     if (req.method === 'HEAD') return res.end();
-    fs.createReadStream(real).on('error', () => res.destroy()).pipe(res);
+    const stream = fs.createReadStream(real);
+    const closeStream = () => { if (!stream.destroyed) stream.destroy(); };
+    res.on('close', closeStream);
+    stream.on('error', () => { if (!res.destroyed) res.destroy(); });
+    stream.pipe(res);
   } catch { send(res, 404, { error: 'not found' }); }
 }
 
